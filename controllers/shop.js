@@ -1,5 +1,4 @@
 const Product = require('../models/product');
-const Cart = require('../models/cart');
 
 const getIndex = (req, res, next) => {
   Product.getAll().then((products) => {
@@ -30,30 +29,13 @@ const getProduct = (req, res, next) => {
 };
 
 const getCart = (req, res, next) => {
-  Cart.getCart((cart) => {
-    // find in the Products model, because I'm storing products ids in the Cart model!
-    Product.getAll((products) => {
-      const cartProducts = [];
-      for (let product of products) {
-        const productInCart = cart.products.find(
-          (cartProd) => cartProd.id === product.id
-        );
-
-        if (productInCart) {
-          cartProducts.push({
-            productData: product,
-            quantity: productInCart.quantity,
-          });
-        }
-      }
-
-      res.render('shop/cart', {
-        products: cartProducts,
-        path: '/cart',
-        pageTitle: 'Your Cart',
-      });
+  req.user.getCart().then((cartProducts) => {
+    res.render('shop/cart', {
+      products: cartProducts,
+      path: '/cart',
+      pageTitle: 'Your Cart',
     });
-  });
+  })
 };
 
 const getOrders = (req, res, next) => {
@@ -73,17 +55,21 @@ const getCheckout = (req, res, next) => {
 const addToCart = (req, res, next) => {
   const { productId } = req.body;
 
-  Product.findById(productId, (product) => {
-    Cart.addProduct(productId, product.price);
-  });
-
-  res.redirect('/cart');
+  Product.findById(productId)
+    .then((product) => {
+      return req.user.addToCart(product);
+    })
+    .then((result) => {
+      console.log('Product added', result);
+      res.redirect('/cart');
+    });
 };
 
 const removeFromCart = (req, res, next) => {
   const { productId } = req.body;
-  Product.findById(productId, product => {
-    Cart.deleteProduct(productId, product.price);
+
+  req.user.removeFromCart(productId).then(() => {
+    console.log('Successfully deleted!');
     res.redirect('/cart');
   })
 };

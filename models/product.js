@@ -1,15 +1,16 @@
 const mongodb = require('mongodb');
 const getDb = require('../util/database').getDb;
 
-const ObjectId = mongodb.ObjectId();
+const ObjectId = mongodb.ObjectId;
 
 class Product {
-  constructor(title, price, description, imageUrl, id) {
+  constructor(title, price, description, imageUrl, id, userId) {
     this.title = title;
     this.price = price;
     this.description = description;
     this.imageUrl = imageUrl;
     this._id = id ? new ObjectId(id) : null;
+    this.userId = userId;
   }
 
   save() {
@@ -51,13 +52,12 @@ class Product {
       });
   }
 
-  static findById(id) {
+  static findById(prodId) {
     const db = getDb();
 
     return db
       .collection('products')
-      .find({ _id: new ObjectId(id) })
-      .next() // we get array of elements using find(), this will extract last element of that array
+      .findOne({ _id: new ObjectId(prodId) })
       .then((product) => {
         console.log(product);
         return product;

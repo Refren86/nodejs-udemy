@@ -18,13 +18,15 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(async (req, res, next) => {
-  const testUser = new User('Kimimaru', 'test@gmail.com');
-  const userInDb = await User.findByEmail(testUser.email);
-  req.user = userInDb;
-
+  const email = 'test@gmail.com';
+  const userInDb = await User.findByEmail(email);
+  
   if (!userInDb) {
+    const testUser = new User('Kimimaru', email);
     await testUser.save();
     console.log('User created!');
+  } else {
+    req.user = new User(userInDb.username, userInDb.email, userInDb.cart, userInDb._id); // allows to pass user in all requests objects with all methods
   }
 
   next();
