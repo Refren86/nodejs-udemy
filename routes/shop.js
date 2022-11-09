@@ -9,6 +9,7 @@ const {
   getOrders,
   addToCart,
   removeFromCart,
+  postOrder,
 } = require('../controllers/shop');
 
 const router = express.Router();
@@ -24,6 +25,8 @@ router.get('/cart', getCart);
 router.get('/orders', getOrders);
 
 router.get('/checkout', getCheckout);
+
+router.post('/create-order', postOrder);
 
 router.post('/cart', addToCart)
 

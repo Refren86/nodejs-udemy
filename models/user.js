@@ -118,6 +118,44 @@ class User {
         { $set: { cart: updatedCart } }
       );
   }
+
+  // user already has cart available, so there is no need to pass arguments
+  addOrder() {
+    const db = getDb();
+
+    return this.getCart()
+      .then((products) => {
+        // all products info with quantity (from cart)
+        const order = {
+          items: products,
+          user: {
+            _id: new ObjectId(this._id),
+            name: this.name,
+          },
+        };
+
+        return db.collection('orders').insertOne(order); // user's cart
+      })
+      .then((result) => {
+        this.cart = { items: [] }; // making cart empty both in user class as well in the db
+
+        return db
+          .collection('users')
+          .updateOne(
+            { _id: new ObjectId(this._id) },
+            { $set: { cart: { items: [] } } }
+          );
+      });
+  }
+
+  getOrders() {
+    const db = getDb();
+
+    return db
+      .collection('orders')
+      .find({ 'user._id': new ObjectId(this._id) })
+      .toArray();
+  }
 }
 
 module.exports = User;

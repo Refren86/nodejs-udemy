@@ -39,11 +39,24 @@ const getCart = (req, res, next) => {
 };
 
 const getOrders = (req, res, next) => {
-  res.render('shop/orders', {
-    path: '/orders',
-    pageTitle: 'Your Orders',
-  });
+  req.user.getOrders().then((orders) => {
+    res.render('shop/orders', {
+      path: '/orders',
+      pageTitle: 'Your Orders',
+      orders: orders
+    });
+  })
 };
+
+const postOrder = (req, res, next) => {
+  req.user.addOrder()
+    .then(() => {
+      res.redirect('/orders')
+    })
+    .catch(err => {
+      console.log(err);
+    });
+}
 
 const getCheckout = (req, res, next) => {
   res.render('shop/checkout', {
@@ -80,6 +93,7 @@ module.exports = {
   getIndex,
   getCart,
   getOrders,
+  postOrder,
   getCheckout,
   addToCart,
   removeFromCart,
